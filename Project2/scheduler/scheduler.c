@@ -1,7 +1,7 @@
 /*Pantelis Flouris, 1093507*/
 /*Aggelos Menegatos, 1093426*/
 /*Chrysafis Koltsakis, 1084671*/
-/*Giorgos Amaxopoulos, */
+/*Giorgos Amaxopoulos, 1093311*/
 
 #include "functions.h"
 #define MAX 256
