@@ -108,7 +108,6 @@ Node* Dequeue(Queue* queue) {
     if (queue->head == NULL) {
         queue->tail = NULL;
     }
-
     // Return the old head node
     return temp;
 }
