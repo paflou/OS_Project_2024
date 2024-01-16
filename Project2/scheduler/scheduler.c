@@ -7,9 +7,9 @@
 #define MAX 256
 
 
-double start_time;
+double start_time, dead_time1 = 0,dead_time2 = 0;
 
-void RR(FILE *fp, Queue *q, int time_slice);
+Queue* RR(FILE *fp, Queue *q, int time_slice);
 
 void sig_handler(){
 }
@@ -21,7 +21,6 @@ int main(int argc,char **argv)
 	FILE *fp;
 	char* init_d;
 	int time_slice;
-	signal(SIGALRM, sig_handler);
 	signal(SIGCHLD, sig_handler);
 	
 	if(strcmp(argv[1], "FCFS") == 0){
@@ -73,12 +72,13 @@ int main(int argc,char **argv)
 
 
 
-void RR(FILE *fp, Queue *q, int time_slice){
+Queue* RR(FILE *fp, Queue *q, int time_slice){
     int status = 0;
     Node *current_node;
+	Queue *finished = createQueue();
 
-	current_node = Dequeue(q);
-    while(current_node->status != EXITED){
+    while(!isNull(q)){
+		current_node = Dequeue(q);
         if (current_node->status == NEW) {
             current_node->status = RUNNING;
             current_node->pid = fork();
@@ -96,27 +96,26 @@ void RR(FILE *fp, Queue *q, int time_slice){
 			kill(current_node->pid, SIGCONT);
 		}
 
-		alarm(time_slice);
-		pause();
 
+		sleep(time_slice);
+		//stop the process right after the time slice
+		kill(current_node->pid, SIGSTOP);
 
   		int check = waitpid(current_node->pid, &status, WNOHANG);
         if(check == 0){
             // The process did not finish, so add it back to the end of the queue
-		    kill(current_node->pid, SIGSTOP);
             current_node->status = STOPPED;
             Enqueue(q, current_node->value, current_node->pid, current_node->status);
         }
-		else {
+		else{
 			double end_time = get_wtime();
-	    	double elapsed_time = ((double) (end_time - start_time));
+	    	double elapsed_time = end_time - start_time;
 			current_node->status = EXITED;
-            Enqueue(q, current_node->value, current_node->pid, current_node->status);
+            Enqueue(finished, current_node->value, current_node->pid, current_node->status);
 			printf("Program %s finished.\n", current_node->value);
 			printf("\tElapsed Time: %.2f secs\n\n", elapsed_time);
 		}
-	current_node = Dequeue(q);
     }
-Enqueue(q, current_node->value, current_node->pid, current_node->status);
+return finished;
 }
 

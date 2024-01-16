@@ -1,9 +1,8 @@
-///////////////////////////////
-// Pantelis Flouris 1093507
-// Chrysafis Koltsakis
-// Georgios Amaxopoulos
-// Aggelos Menegatos
-//////////////////////////////
+/*Pantelis Flouris, 1093507*/
+/*Aggelos Menegatos, 1093426*/
+/*Chrysafis Koltsakis, 1084671*/
+/*Giorgos Amaxopoulos, 1093311*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -17,8 +16,6 @@
 
 sem_t flag; //Semaphore declaration
 
-
-// Function declarations
 
 double get_wtime(void);
 

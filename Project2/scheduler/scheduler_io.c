@@ -5,12 +5,11 @@
 
 #include "functions.h"
 
-void RR(FILE *fp, Queue *q,int time_slice);
+Queue* RR(FILE *fp, Queue *q,int time_slice);
 int io_pending = 0, io_done = 0;
 double start_time;
 
 void io_pending_handler(int signo) {
-	
 	io_pending = 1;
 }
 void io_done_handler(int signo) {
@@ -23,7 +22,6 @@ void sig_handler(int signo) {
 
 int main(int argc,char **argv)
 {
-	signal(SIGALRM, sig_handler);
 	signal(SIGCHLD, sig_handler);
 	signal(SIGUSR1, io_pending_handler);
 	signal(SIGUSR2, io_done_handler);
@@ -63,14 +61,13 @@ int main(int argc,char **argv)
     if(strcmp(init_d, "FCFS") == 0){
         printf("Starting FCFS scheduling...\n");
     	start_time = get_wtime();
-        RR(fp, q, 1000); 
+        q = RR(fp, q, 1000); 
     }
 	else if(strcmp(init_d, "RR") == 0){
 		printf("Starting RR scheduling...\n");
 		start_time = get_wtime();
-		RR(fp, q, 0.001 * time_slice); 
+		q = RR(fp, q, 0.001 * time_slice); 
 	}
-
 	else {
         printf("Wrong input!\n");
         return 1;
@@ -81,11 +78,12 @@ int main(int argc,char **argv)
 
 }
 
-void RR(FILE *fp, Queue *q, int time_slice){
+Queue *RR(FILE *fp, Queue *q, int time_slice){
     int status = 0;
     Node *current_node;
-	current_node = Dequeue(q);
-    while(current_node->status != EXITED){
+	Queue *finished = createQueue();
+    while(!isNull(q)){
+		current_node = Dequeue(q);
         if (current_node->status == NEW) {
             current_node->status = RUNNING;
             current_node->pid = fork();
@@ -98,20 +96,16 @@ void RR(FILE *fp, Queue *q, int time_slice){
                	exit(0);
    	        }
 		}
-		else if(current_node->status == STOPPED) {
+		else if(current_node->status == STOPPED || current_node->status == IO) {
 			current_node->status = RUNNING;
 			kill(current_node->pid, SIGCONT);
 		}
 
-		alarm(time_slice);
-		pause();
+		sleep(time_slice);
+		//stop the process right after the time slice
+		kill(current_node->pid, SIGSTOP);
 
-		if(io_pending == 1) {
-			kill(current_node->pid, SIGSTOP);
-			current_node->status = IO;
-			io_pending = 0;
-		}
-		else if(io_done == 1) {
+		if(io_done == 1) {
 			current_node->status = STOPPED;
 			io_done = 0;
 		}
@@ -119,21 +113,22 @@ void RR(FILE *fp, Queue *q, int time_slice){
 		int check = waitpid(current_node->pid, &status, WNOHANG);
         if(check == 0){
             // The process did not finish, so add it back to the end of the queue
-			kill(current_node->pid, SIGSTOP);
-            current_node->status = STOPPED;
+			current_node->status = STOPPED;
+			if(io_pending == 1) {
+				current_node->status = IO;
+				io_pending = 0;
+			}
             Enqueue(q, current_node->value, current_node->pid, current_node->status);
         }
 		else {
 			double end_time = get_wtime();
 	    	double elapsed_time = ((double) (end_time - start_time));
 			current_node->status = EXITED;
-            Enqueue(q, current_node->value, current_node->pid, current_node->status);
-
+            Enqueue(finished, current_node->value, current_node->pid, current_node->status);
 			printf("Program %s finished.\n", current_node->value);
 			printf("\tElapsed Time: %.2f secs\n\n", elapsed_time);
 		}
-	current_node = Dequeue(q);
     }
-	Enqueue(q, current_node->value, current_node->pid, current_node->status);
+	return finished;
 }
 

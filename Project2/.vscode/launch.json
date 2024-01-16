@@ -5,7 +5,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}/${fileBasenameNoExtension}",
-            "args": ["FCFS","homogeneous.txt"],
+            "args": ["FCFS","mixed.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

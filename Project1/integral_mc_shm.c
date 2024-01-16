@@ -1,9 +1,8 @@
-///////////////////////////////
-// Pantelis Flouris 1093507
-// Chrysafis Koltsakis
-// Georgios Amaxopoulos
-// Aggelos Menegatos
-//////////////////////////////
+/*Pantelis Flouris, 1093507*/
+/*Aggelos Menegatos, 1093426*/
+/*Chrysafis Koltsakis, 1084671*/
+/*Giorgos Amaxopoulos, 1093311*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -29,7 +28,7 @@ double *shared_memory_initialization(int processes_num){
               PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS,-1,0);
 } 
 
-void calculate_integral(unsigned long n,int processes_num, double* memory,int array_slot){
+void calculate_integral(unsigned long n, double* memory,int array_slot){
   srand48(array_slot); 
   double res=0;
   for (unsigned long i = 0; i < n; i++) {
@@ -57,7 +56,6 @@ int main(int argc, char *argv[]) {
   const double ref = 0.73864299803689018;
   double res = 0;
   double t0, t1;
-
   int Processes = 4; //Default number of processes
   unsigned long instances_per_core;
 
@@ -79,7 +77,7 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < Processes; ++i) {
     pid_t child_pid = fork();
     if(child_pid==0){
-        calculate_integral(instances_per_core,Processes,ptr,i);
+        calculate_integral(instances_per_core,ptr,i);
         exit(EXIT_SUCCESS);
       }
       else if (child_pid<0){
