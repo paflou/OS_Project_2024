@@ -1,3 +1,8 @@
+/*Pantelis Flouris, 1093507*/
+/*Aggelos Menegatos, 1093426*/
+/*Chrysafis Koltsakis, 1084671*/
+/*Giorgos Amaxopoulos, 1093311*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
